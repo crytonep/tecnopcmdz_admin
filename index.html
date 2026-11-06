@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es"><head>
+<html lang="es">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TECNO PC MDZ · Servicio Técnico</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap">
+<title>TECNO PC MDZ · Panel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 <style>
 :root{color-scheme:dark;--bg:#080304;--card:rgba(255,255,255,.055);--tx:#fff;--mute:#c4aeb1;--line:rgba(255,255,255,.13);--acc:#d71c1c;--acc2:#ff4b45;--blue:#5b7cff;--ok:#2fb86a;--warn:#f2a93b;--on:#fff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -52,7 +53,6 @@ tfoot td{font-weight:700;background:rgba(0,0,0,.35)}
 </head>
 <body>
 <div id="root"></div>
-<script id="pub" type="application/json">[]</script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -61,7 +61,6 @@ const LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemSAA
 const C={nombre:'TECNO PC MDZ',ig:'tecnopc.mdz',wa:''};
 const ESTADOS=['Ingresado','En diagnóstico','Esperando aprobación','En reparación','Listo para retirar','Entregado','Cancelado'];
 const PAGOS=['Efectivo','Transferencia','Mercado Pago','Otro'];
-const PUB=JSON.parse($('#pub').textContent||'[]');
 const money=v=>'$ '+Math.round(Number(v)||0).toLocaleString('es-AR');
 const fecha=t=>t?new Date(t).toLocaleDateString('es-AR'):'';
 const num=v=>Number(v)||0;
@@ -76,34 +75,14 @@ const WA='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="cu
 const wan=String(C.wa).replace(/\D/g,'');
 const cta=`<div class="cta"><a class="ig" href="https://instagram.com/${C.ig}" target="_blank" rel="noopener">${IG}@${C.ig}</a>${wan?`<a class="wa" href="https://wa.me/${wan}?text=${encodeURIComponent('Hola, quiero consultar por mi equipo en reparación.')}" target="_blank" rel="noopener">${WA}WhatsApp</a>`:''}</div>`;
 
-$('#root').innerHTML=`
-<div id="v-c" class="wrap"><div class="c">
- <div class="hero"><img src="${LOGO}" alt="${C.nombre}"><h1>${C.nombre}</h1><p>Servicio técnico · Reparación de computadoras · Activación e instalación</p>${cta}</div>
- <div class="card"><h2>Consultá el estado de tu equipo</h2>
-  <label for="tel">Teléfono con el que lo ingresaste</label><input id="tel" type="tel" inputmode="tel" placeholder="Ej: 261 555 1234">
-  <button class="btn" id="buscar" style="margin-top:14px">Ver estado</button></div>
- <div id="res"></div><div class="foot">${C.nombre} · @${C.ig}</div></div></div>
-<div id="v-p" class="wrap" hidden></div><div id="modal" class="ov" hidden></div>`;
+$('#root').innerHTML=`<div id="v-p" class="wrap"></div><div id="modal" class="ov" hidden></div>`;
 
-async function buscar(){
- const h=await hash($('#tel').value),o=$('#res');
- if(!h){o.innerHTML='<div class="msg">Ingresá un número de teléfono válido.</div>';return}
- const r=PUB.filter(p=>p.h===h);
- o.innerHTML=r.length?r.map(p=>`<div class="card"><div class="top"><strong>${esc(p.equipo)}</strong><span class="pill ${cls(p.estado)}">${esc(p.estado)}</span></div>
-  <div class="bar"><i style="width:${pg(p.estado)}%"></i></div>
-  <div class="meta">Ingreso: ${fecha(p.ingreso)} · Última actualización: ${fecha(p.actualizado)}</div>
-  ${p.diagnostico?`<div class="msg"><b>Diagnóstico:</b> ${esc(p.diagnostico)}</div>`:''}
-  <div class="msg"><b>Presupuesto:</b> ${p.presupuesto?money(p.presupuesto):'A definir'}</div>
-  ${p.nota?`<div class="msg"><b>Novedades:</b> ${esc(p.nota)}</div>`:''}</div>`).join('')
-  :'<div class="msg">No encontramos equipos con ese número. Revisá que sea el mismo que dejaste al ingresarlo.</div>';
-}
-$('#buscar').onclick=buscar;$('#tel').addEventListener('keydown',e=>{if(e.key==='Enter')buscar()});
 
 // ---------- panel ----------
 function armar(){
  $('#v-p').innerHTML=`<div class="bar2"><img src="${LOGO}" alt=""><h1>${C.nombre} · Panel</h1><div class="sp"></div>
   <a class="btn g s" href="#consulta" style="text-decoration:none">Ver página del cliente</a>
-  <button class="btn g s" id="exp">Exportar a Excel (CSV)</button><button class="btn s" id="nuevo">+ Nuevo ingreso</button></div>
+  <button class="btn g s" id="exp">Exportar a Excel (CSV)</button><button class="btn g s" id="bk">Descargar respaldo</button><button class="btn g s" id="rs">Restaurar respaldo</button><input type="file" id="fi" accept=".json" hidden><button class="btn s" id="nuevo">+ Nuevo ingreso</button></div>
  <div class="kpis" id="kp"></div><div class="card"><h2>Ingresos cobrados · últimos 6 meses</h2><div id="ch"></div></div>
  <div class="flt"><input id="q" placeholder="Buscar cliente, teléfono o equipo…">
   <select id="fe"><option value="">Todos los estados</option>${ESTADOS.map(e=>`<option>${e}</option>`).join('')}</select>
@@ -111,6 +90,9 @@ function armar(){
  <div class="tw"><table><thead><tr>${[['ingreso','Ingreso'],['nombre','Cliente'],['tel','Teléfono'],['equipo','Equipo'],['estado','Estado'],['presupuesto','Presupuesto','n'],['cobrado','Cobrado','n'],['saldo','Saldo','n'],['ganancia','Ganancia','n']].map(c=>`<th data-k="${c[0]}" class="${c[2]||''}">${c[1]}</th>`).join('')}</tr></thead><tbody id="tb"></tbody><tfoot id="tf"></tfoot></table></div><div class="meta" id="st" style="margin-top:8px"></div>`;
  $('#q').oninput=e=>{F.q=e.target.value.toLowerCase();tabla()};$('#fe').onchange=e=>{F.e=e.target.value;tabla()};$('#fc').onchange=e=>{F.c=e.target.value;tabla()};
  $('#nuevo').onclick=()=>form(null);$('#exp').onclick=exportar;
+ $('#bk').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(store)],{type:'application/json'}));a.download='tecnopc-mdz-respaldo.json';a.click()};
+ $('#rs').onclick=()=>$('#fi').click();
+ $('#fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o||typeof o!=='object'||Array.isArray(o))throw 0;store=o;persist();emit()}catch(x){$('#st').textContent='Archivo de respaldo inválido.'}e.target.value=''};
  $('#v-p').querySelector('thead').onclick=e=>{const k=e.target.closest('th')?.dataset.k;if(!k)return;S=S.k===k?{k,d:-S.d}:{k,d:1};tabla()};
  $('#tb').onclick=e=>{if(e.target.closest('select'))return;const r=e.target.closest('tr');if(r)form(r.dataset.id)};
  $('#tb').onchange=async e=>{const s=e.target.closest('select');if(!s)return;const id=s.closest('tr').dataset.id;
@@ -166,7 +148,7 @@ function form(id){
 async function guardar(){
  const g=k=>$('#f-'+k).value.trim(),fs=$('#fs');
  if(!g('nombre')||!g('tel')||!g('equipo')){fs.textContent='Completá cliente, teléfono y equipo.';return}
- const h=await hash(g('tel'));if(!h){fs.textContent='Teléfono inválido.';return}
+ const h=g('tel').replace(/\D/g,'').length>=6;if(!h){fs.textContent='Teléfono inválido.';return}
  const id=editing||crypto.randomUUID(),p=items.find(i=>i.id===id)||{},cob=num(g('cobrado'));
  const d={nombre:g('nombre'),tel:g('tel'),equipo:g('equipo'),estado:g('estado'),diagnostico:g('diagnostico'),presupuesto:g('presupuesto'),repuestos:g('repuestos'),cobrado:g('cobrado'),pago:g('pago'),nota:g('nota'),h,
   ingreso:p.ingreso||Date.now(),actualizado:Date.now(),pagoFecha:cob>0?(num(p.cobrado)===cob&&p.pagoFecha?p.pagoFecha:Date.now()):null};
@@ -175,28 +157,22 @@ async function guardar(){
  await pushPublic(items.filter(i=>i.id!==id).concat({id,...d}));
 }
 async function exportar(){
- const dl=await claude.use('downloads');if(!dl){$('#st').textContent='La descarga no está disponible.';return}
+ const dl={save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.download=filename;a.click()}};
  const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"',H=['Ingreso','Cliente','Teléfono','Equipo','Estado','Diagnóstico','Presupuesto','Repuestos','Cobrado','Saldo','Ganancia','Medio de pago'];
  const rows=items.map(i=>{const c=calc(i);return [fecha(i.ingreso),i.nombre,i.tel,i.equipo,i.estado,i.diagnostico,num(i.presupuesto),num(i.repuestos),num(i.cobrado),c.saldo,c.ganancia,i.pago].map(q).join(';')});
  try{await dl.save({filename:'tecnopc-mdz-equipos.csv',data:'\ufeff'+[H.map(q).join(';'),...rows].join('\r\n')})}catch(e){}
 }
-async function pushPublic(all){
- const art=await claude.use('artifact');if(!art)return;
- const pub=all.map(({h,equipo,estado,diagnostico,presupuesto,nota,ingreso,actualizado})=>({h,equipo,estado,diagnostico,presupuesto,nota,ingreso,actualizado}));
- const c=document.documentElement.cloneNode(true);c.querySelector('#root').innerHTML='';
- c.querySelector('#pub').textContent=JSON.stringify(pub).replace(/</g,'\\u003c');
- try{await art.publish('<!doctype html>\n'+c.outerHTML)}catch(e){}
-}
-// ---------- navegación ----------
-function vista(){const p=admin&&location.hash!=='#consulta';$('#v-p').hidden=!p;$('#v-c').hidden=p;if(!p)$('#modal').hidden=true}
-addEventListener('hashchange',vista);
-(async()=>{try{
- const u=await claude.use('user');db=await claude.use('db');
- if(!db||!u||!u.canEdit())return;
- admin=true;armar();vista();
- db.collection('equipos').onSnapshot(s=>{items=s.docs.map(d=>({id:d.id,...d.data()}));kpis();tabla()},()=>{$('#st').textContent='Error al leer los datos.'});
-}catch(e){}})();
+async function pushPublic(){}
+// ---------- datos (guardados en este navegador) ----------
+const KEY='tecnopc-mdz-equipos';let store={},subs=[];
+try{store=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){alert('No se pudo guardar en este navegador. Descargá un respaldo.')}}
+function emit(){const s={docs:Object.entries(store).map(([id,d])=>({id,data:()=>d}))};subs.forEach(f=>f(s))}
+db={collection:()=>({doc:id=>({
+ set:async d=>{store[id]=d;persist();emit()},update:async d=>{store[id]={...store[id],...d};persist();emit()},delete:async()=>{delete store[id];persist();emit()}}),
+ onSnapshot:f=>{subs.push(f);emit()}})};
+admin=true;armar();
+db.collection('equipos').onSnapshot(s=>{items=s.docs.map(d=>({id:d.id,...d.data()}));kpis();tabla()});
 </script>
-
-
-</body></html>
+</body>
+</html>
